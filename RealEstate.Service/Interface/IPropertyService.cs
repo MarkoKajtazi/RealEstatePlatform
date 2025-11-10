@@ -12,5 +12,6 @@ public interface IPropertyService
     Property Update(Property property);
     Property DeleteById(Guid id);
     Task<Property> InsertImageById(Guid id,  UploadImageDTO dto);
+    Task<Property> DeleteImageById(Guid id, Guid imageId);
     Task<Property> InsertListingById(Guid id,  Listing listing);
 }

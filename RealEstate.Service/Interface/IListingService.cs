@@ -13,4 +13,6 @@ public interface IListingService
     Listing Update(Listing listing);
     Listing DeleteById(Guid id);
     Task<Listing> InsertImageById(Guid id, UploadImageDTO dto);
+    Task<Listing> DeleteImageById(Guid id, Guid imageId);
+    Task<Listing> InsertFloorPlanPin(Guid id, FloorPlanPin floorPlanPin, UploadImageDTO dto);
 }

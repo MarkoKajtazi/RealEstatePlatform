@@ -25,4 +25,5 @@ public class Listing : BaseEntity
     public Guid PropertyId { get; set; }
     [JsonIgnore] public Property? Property { get; set; }
     public ICollection<Image>? Images { get; set; } = new List<Image>();
+    public ICollection<FloorPlanPin>? FloorPlanPins { get; set; } = new List<FloorPlanPin>();
 }

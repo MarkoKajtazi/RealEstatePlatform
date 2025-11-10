@@ -13,7 +13,8 @@ public class PropertyService : IPropertyService
     private readonly IImageService _imageService;
     private readonly IListingService _listingService;
 
-    public PropertyService(IRepository<Property> propertyRepository, IImageService imageService, IListingService listingService)
+    public PropertyService(IRepository<Property> propertyRepository, IImageService imageService,
+        IListingService listingService)
     {
         _propertyRepository = propertyRepository;
         _imageService = imageService;
@@ -29,7 +30,10 @@ public class PropertyService : IPropertyService
 
     public Property? GetById(Guid id)
     {
-        return _propertyRepository.Get(selector: x => x, predicate: x => x.Id == id);
+        return _propertyRepository.Get(
+            selector: x => x, predicate: x => x.Id == id,
+            include: x => x.Include(q => q.Images).Include(q => q.Listings)
+        );
     }
 
     public Property Insert(Property property)
@@ -50,36 +54,53 @@ public class PropertyService : IPropertyService
 
         List<Image> images = _imageService.GetByPropertyId(id);
         foreach (var image in images) _imageService.DeleteById(image.Id);
-        
+
         List<Listing> listings = _listingService.GetByPropertyId(id);
         foreach (var listing in listings) _listingService.DeleteById(listing.Id);
-        
+
         return _propertyRepository.Delete(property);
     }
 
     public async Task<Property> InsertImageById(Guid id, UploadImageDTO dto)
     {
         var property = GetById(id);
-        
+
         if (property == null) throw new Exception("Property not found");
         if (dto.File == null) throw new Exception("File null");
 
         dto.PropertyId = property.Id;
         Image newImage = await _imageService.Insert(dto);
-        
+
         property.Images.Add(newImage);
         return _propertyRepository.Update(property);
     }
+
+    public async Task<Property> DeleteImageById(Guid propertyId, Guid imageId)
+    {
+        var property = GetById(propertyId);
+        if (property == null) throw new Exception("Property not found");
+
+        var image = _imageService.GetById(imageId);
+        if (image == null) throw new Exception("Image not found");
+
+        property.Images.Remove(image);
+
+        await _imageService.DeleteById(imageId);
+        _propertyRepository.Update(property);
+
+        return property;
+    }
+
 
     public Task<Property> InsertListingById(Guid id, Listing listing)
     {
         var property = GetById(id);
         if (property == null) throw new Exception("Property not found");
-        
+
         listing.PropertyId = id;
         Listing newListing = _listingService.Insert(listing);
         property.Listings.Add(newListing);
-        
+
         return Task.FromResult(_propertyRepository.Update(property));
     }
 }

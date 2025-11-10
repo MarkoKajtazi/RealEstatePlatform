@@ -1,0 +1,41 @@
+html, body, #root {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: #0f0f0f;
+}
+
+.bg-video {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1rem solid black;
+    align-self: center;
+    margin: auto;
+}
+
+
+.video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+.hero-caption {
+    top: 0;
+    text-align: center;
+    color: white;
+}
+
+.listings {
+    position: absolute;
+    right: 0;
+    top: 20px;
+    z-index: 10;
+    width: 30%;
+}

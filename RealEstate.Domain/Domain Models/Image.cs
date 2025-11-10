@@ -8,6 +8,7 @@ public enum ImageType : byte
     Exterior = 0,
     Panorama360 = 1,
     FloorPlan = 2,
+    Hero = 3
 };
 
 public class Image : BaseEntity

@@ -55,6 +55,12 @@ public class PropertiesController : Controller
     {
         return Ok(_imageService.GetByPropertyId(Guid.Parse(id)));
     }
+    
+    [HttpDelete("{id}/images/{imageId}")]
+    public async Task<IActionResult> DeleteImageById(string id, string imageId)
+    {
+        return Ok(await _propertyService.DeleteImageById(Guid.Parse(id), Guid.Parse(imageId)));
+    }
 
     [RequestSizeLimit(100_000_000)]
     [HttpPost("{id}/images")]
@@ -62,17 +68,5 @@ public class PropertiesController : Controller
     public async Task<IActionResult> InsertImageById(string id, UploadImageDTO dto)
     {
         return Ok(await _propertyService.InsertImageById(Guid.Parse(id), dto));
-    }
-    
-    [HttpGet("{id}/listings")]
-    public IActionResult GetListingById(string id)
-    {
-        return Ok(_listingService.GetByPropertyId(Guid.Parse(id)));
-    }
-    
-    [HttpPost("{id}/listings")]
-    public async Task<IActionResult> InsertListingById(string id, [FromBody] Listing listing)
-    {
-        return Ok(await _propertyService.InsertListingById(Guid.Parse(id), listing));
     }
 }

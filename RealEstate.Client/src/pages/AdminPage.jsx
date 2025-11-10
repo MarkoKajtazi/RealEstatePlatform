@@ -1,0 +1,25 @@
+import React from "react";
+import {Outlet} from "react-router-dom";
+import PropertiesSidebar from "../features/property/PropertiesSidebar.jsx";
+
+export default function AdminPage() {
+    return (
+        <div className="d-flex p-0" style={{ minHeight: "100vh" }}>
+            <aside
+                id="sidebar"
+                className="bg-dark text-white flex-shrink-0"
+                style={{ width: 280, minWidth: 220, height: "100vh", overflowY: "auto" }}
+            >
+                <div className="p-3">
+                    <PropertiesSidebar compact />
+                </div>
+            </aside>
+
+            <main className="flex-grow-1 p-0 m-0" style={{ maxHeight: "100vh", overflowY: "auto" }}>
+                <div className="container p-3 h-100 d-flex flex-column" style={{ minHeight: 0 }}>
+                    <Outlet />
+                </div>
+            </main>
+        </div>
+    );
+};

@@ -83,7 +83,7 @@ public class ImageService : IImageService
             Url = url,
             PublicId = uploadResult.PublicId,
             FileName = uploadResult.OriginalFilename,
-            MimeType = uploadResult.Type,
+            MimeType = dto.File.ContentType,
             Width = uploadResult.Width ?? 0,
             Height = uploadResult.Height ?? 0,
             Type = dto.Type,
