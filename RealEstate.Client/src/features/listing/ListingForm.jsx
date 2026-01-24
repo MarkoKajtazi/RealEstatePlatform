@@ -1,12 +1,24 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { Modal, Button, Form } from "react-bootstrap";
 import {
     createListings,
     deleteListingFloorPlan,
-    fetchListing, insertFloorPlan,
+    fetchListing,
+    insertFloorPlan,
     updateListing,
+    fetchFloorPlanPins,
+    createFloorPlanPin,
 } from "../../services/listingService.js";
-import {fetchProperty, insertPropertyImage} from "../../services/propertyService.js";
+import { fetchProperty } from "../../services/propertyService.js";
+
+const IMAGE_TYPES = [
+    { value: 0, label: "Exterior" },
+    { value: 1, label: "Panorama 360" },
+    { value: 2, label: "Floor Plan" },
+    { value: 3, label: "Hero" },
+    { value: 4, label: "Interior" },
+];
 
 export default function ListingForm() {
     const { id, propertyId } = useParams();
@@ -34,6 +46,22 @@ export default function ListingForm() {
     const fileInputRef = useRef();
 
     const [listingPropertyId, setListingPropertyId] = useState(propertyId ?? "");
+
+    // Floor plan pin state
+    const [floorPlanPins, setFloorPlanPins] = useState([]);
+    const [showPinModal, setShowPinModal] = useState(false);
+    const [pendingPinCoords, setPendingPinCoords] = useState({ x: 0, y: 0 });
+    const [pinImage, setPinImage] = useState(null);
+    const [savingPin, setSavingPin] = useState(false);
+    const [selectedPin, setSelectedPin] = useState(null); // For viewing existing pin images
+    const floorPlanRef = useRef(null);
+    const pinFileInputRef = useRef(null);
+
+    // New image upload state
+    const [newImage, setNewImage] = useState(null);
+    const [selectedImageType, setSelectedImageType] = useState(0);
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const newImageInputRef = useRef(null);
 
     // Load listing or property
     useEffect(() => {
@@ -108,6 +136,108 @@ export default function ListingForm() {
         };
     }, [newFloorPlan]);
 
+    // Load floor plan pins when editing
+    useEffect(() => {
+        if (!isEdit || !id) return;
+
+        async function loadPins() {
+            try {
+                const pins = await fetchFloorPlanPins(id);
+                setFloorPlanPins(pins ?? []);
+            } catch (err) {
+                console.error("Failed to load floor plan pins", err);
+            }
+        }
+
+        loadPins();
+    }, [isEdit, id]);
+
+    // Cleanup pin image preview
+    useEffect(() => {
+        return () => {
+            if (pinImage?.preview) URL.revokeObjectURL(pinImage.preview);
+        };
+    }, [pinImage]);
+
+    // Cleanup new image preview
+    useEffect(() => {
+        return () => {
+            if (newImage?.preview) URL.revokeObjectURL(newImage.preview);
+        };
+    }, [newImage]);
+
+    // Helper function to group images by type
+    function groupImagesByType(images) {
+        return IMAGE_TYPES.map((type) => ({
+            ...type,
+            images: images.filter((img) => img.type === type.value),
+        })).filter((group) => group.images.length > 0);
+    }
+
+    function handleFloorPlanClick(e) {
+        if (!isEdit) return; // Only allow adding pins when editing
+
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+
+        // Clamp values between 0 and 1
+        const clampedX = Math.max(0, Math.min(1, x));
+        const clampedY = Math.max(0, Math.min(1, y));
+
+        setPendingPinCoords({ x: clampedX, y: clampedY });
+        setShowPinModal(true);
+    }
+
+    function handlePinImageChange(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setPinImage({
+            file,
+            preview: URL.createObjectURL(file),
+        });
+        if (pinFileInputRef.current) pinFileInputRef.current.value = null;
+    }
+
+    function handleClosePinModal() {
+        setShowPinModal(false);
+        setPendingPinCoords({ x: 0, y: 0 });
+        if (pinImage?.preview) URL.revokeObjectURL(pinImage.preview);
+        setPinImage(null);
+    }
+
+    async function handleSavePin() {
+        if (!pinImage?.file) {
+            alert("Please select an image for the pin.");
+            return;
+        }
+
+        setSavingPin(true);
+        try {
+            const formData = new FormData();
+            // FloorPlanPin properties
+            formData.append("X", pendingPinCoords.x.toString());
+            formData.append("Y", pendingPinCoords.y.toString());
+            // UploadImageDTO properties
+            formData.append("File", pinImage.file);
+            formData.append("Type", "3"); // Hero image type for pins
+
+            await createFloorPlanPin(id, formData);
+
+            // Reload pins
+            const pins = await fetchFloorPlanPins(id);
+            setFloorPlanPins(pins ?? []);
+
+            handleClosePinModal();
+        } catch (err) {
+            console.error("Failed to create floor plan pin", err);
+            alert("Failed to create pin. Check console for details.");
+        } finally {
+            setSavingPin(false);
+        }
+    }
+
     function handleChange(e) {
         const { name, value, type, checked } = e.target;
         setForm((prev) => ({
@@ -138,6 +268,52 @@ export default function ListingForm() {
     function removeNewFile() {
         if (newFloorPlan?.preview) URL.revokeObjectURL(newFloorPlan.preview);
         setNewFloorPlan(null);
+    }
+
+    // New image upload handlers
+    function handleNewImageFile(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setNewImage({
+            file,
+            preview: URL.createObjectURL(file),
+        });
+        if (newImageInputRef.current) newImageInputRef.current.value = null;
+    }
+
+    function handleNewImageTypeChange(e) {
+        setSelectedImageType(Number(e.target.value));
+    }
+
+    function removeNewImage() {
+        if (newImage?.preview) URL.revokeObjectURL(newImage.preview);
+        setNewImage(null);
+    }
+
+    async function handleUploadNewImage() {
+        if (!newImage?.file || !id) return;
+
+        setUploadingImage(true);
+        try {
+            const formData = new FormData();
+            formData.append("File", newImage.file);
+            formData.append("Type", selectedImageType.toString());
+
+            await insertFloorPlan(id, formData);
+
+            // Reload listing to get updated images
+            const data = await fetchListing(id);
+            setExistingImages(data.images ?? []);
+
+            // Clear the new image state
+            removeNewImage();
+        } catch (err) {
+            console.error("Failed to upload image", err);
+            alert("Failed to upload image. Check console for details.");
+        } finally {
+            setUploadingImage(false);
+        }
     }
 
     async function handleRemoveExistingImage(imageId) {
@@ -211,7 +387,7 @@ export default function ListingForm() {
     if (loading) return <div>Loading...</div>;
 
     return (
-        <div className="bg-dark text-white rounded-2 p-3" style={{ height: "100%", minHeight: 0 }}>
+        <div className="bg-dark text-white rounded-2 p-3 overflow-auto" style={{ height: "100%", minHeight: 0 }}>
             <h2 className="mb-3">
                 {isEdit ? "Edit Listing" : `Create Listing for ${property?.name ?? "—"}`}
             </h2>
@@ -323,46 +499,119 @@ export default function ListingForm() {
                     </label>
                 </div>
 
+                {/* Images Section */}
                 {(existingImages.length > 0 || newFloorPlan) && (
                     <div className="mb-3">
-                        <label className="form-label">Floor Plan</label>
-                        <div className="d-flex gap-2 flex-row flex-nowrap overflow-auto p-2">
-                            {existingImages.map((img) => (
-                                <div key={img.id} className="position-relative">
-                                    <img src={img.url} alt="Floor plan" style={{ display: "block" }} />
-                                    <button
-                                        type="button"
-                                        className="btn btn-sm btn-danger position-absolute"
-                                        style={{ top: 6, right: 6 }}
-                                        onClick={() => handleRemoveExistingImage(img.id)}
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
-                            ))}
+                        <label className="form-label">Images</label>
 
-                            {newFloorPlan && (
-                                <div>
-                                    <img
-                                        src={newFloorPlan.preview}
-                                        alt="preview"
-                                        style={{ width: 150, display: "block" }}
-                                    />
-                                    <button
-                                        type="button"
-                                        className="btn btn-sm btn-secondary position-absolute"
-                                        style={{ top: 6, right: 6 }}
-                                        onClick={removeNewFile}
-                                    >
-                                        ✕
-                                    </button>
+                        {/* Grouped images by type */}
+                        {groupImagesByType(existingImages).map((group) => (
+                            <div key={group.value} className="mb-3">
+                                <div className="text-muted mb-2" style={{ fontSize: "0.9em", borderBottom: "1px solid #444", paddingBottom: 4 }}>
+                                    {group.label}
+                                    {group.value === 2 && isEdit && (
+                                        <span className="ms-2" style={{ fontSize: "0.85em" }}>
+                                            (Click on floor plan to add a pin)
+                                        </span>
+                                    )}
                                 </div>
-                            )}
-                        </div>
+                                <div className="d-flex gap-2 flex-row flex-wrap p-2">
+                                    {group.images.map((img) => (
+                                        <div key={img.id} className="position-relative">
+                                            {/* Floor plan images get special treatment with pins */}
+                                            {group.value === 2 ? (
+                                                <div
+                                                    ref={floorPlanRef}
+                                                    style={{
+                                                        position: "relative",
+                                                        display: "inline-block",
+                                                        cursor: isEdit ? "crosshair" : "default",
+                                                    }}
+                                                    onClick={handleFloorPlanClick}
+                                                >
+                                                    <img
+                                                        src={img.url}
+                                                        alt="Floor plan"
+                                                        style={{ display: "block", maxHeight: 300 }}
+                                                        draggable={false}
+                                                    />
+                                                    {/* Render existing pins */}
+                                                    {floorPlanPins.map((pin) => (
+                                                        <div
+                                                            key={pin.id}
+                                                            style={{
+                                                                position: "absolute",
+                                                                left: `${pin.x * 100}%`,
+                                                                top: `${pin.y * 100}%`,
+                                                                transform: "translate(-50%, -50%)",
+                                                                width: 24,
+                                                                height: 24,
+                                                                borderRadius: "50%",
+                                                                backgroundColor: "#dc3545",
+                                                                border: "3px solid white",
+                                                                boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                                                                cursor: "pointer",
+                                                                zIndex: 10,
+                                                            }}
+                                                            title="Click to view image"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setSelectedPin(pin);
+                                                            }}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <img
+                                                    src={img.url}
+                                                    alt={group.label}
+                                                    style={{ height: 150, display: "block", objectFit: "cover" }}
+                                                />
+                                            )}
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm btn-danger position-absolute"
+                                                style={{ top: 6, right: 6, zIndex: 20 }}
+                                                onClick={() => handleRemoveExistingImage(img.id)}
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* New floor plan preview (for create mode) */}
+                        {newFloorPlan && (
+                            <div className="mb-3">
+                                <div className="text-muted mb-2" style={{ fontSize: "0.9em", borderBottom: "1px solid #444", paddingBottom: 4 }}>
+                                    Floor Plan (pending upload)
+                                </div>
+                                <div className="d-flex gap-2 p-2">
+                                    <div className="position-relative">
+                                        <img
+                                            src={newFloorPlan.preview}
+                                            alt="preview"
+                                            style={{ height: 150, display: "block" }}
+                                        />
+                                        <button
+                                            type="button"
+                                            className="btn btn-sm btn-secondary position-absolute"
+                                            style={{ top: 6, right: 6 }}
+                                            onClick={removeNewFile}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
-                {existingImages.length === 0 && !newFloorPlan && (
+                {/* Add Floor Plan for create mode */}
+                {!isEdit && existingImages.length === 0 && !newFloorPlan && (
                     <div className="mb-3">
                         <label className="form-label">Add Floor Plan</label>
                         <input
@@ -372,6 +621,66 @@ export default function ListingForm() {
                             accept="image/*"
                             onChange={handleFile}
                         />
+                    </div>
+                )}
+
+                {/* Add New Image Section (edit mode only) */}
+                {isEdit && (
+                    <div className="mb-4 p-3 border border-secondary rounded">
+                        <label className="form-label">Add New Image</label>
+                        <div className="row g-2 align-items-end">
+                            <div className="col-md-4">
+                                <label className="form-label small text-muted">Image Type</label>
+                                <Form.Select
+                                    value={selectedImageType}
+                                    onChange={handleNewImageTypeChange}
+                                    disabled={uploadingImage}
+                                >
+                                    {IMAGE_TYPES.map((type) => (
+                                        <option key={type.value} value={type.value}>
+                                            {type.label}
+                                        </option>
+                                    ))}
+                                </Form.Select>
+                            </div>
+                            <div className="col-md-5">
+                                <label className="form-label small text-muted">Select Image</label>
+                                <Form.Control
+                                    ref={newImageInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleNewImageFile}
+                                    disabled={uploadingImage}
+                                />
+                            </div>
+                            <div className="col-md-3">
+                                <Button
+                                    variant="success"
+                                    onClick={handleUploadNewImage}
+                                    disabled={!newImage || uploadingImage}
+                                    className="w-100"
+                                >
+                                    {uploadingImage ? "Uploading..." : "Upload"}
+                                </Button>
+                            </div>
+                        </div>
+                        {newImage?.preview && (
+                            <div className="mt-3 position-relative d-inline-block">
+                                <img
+                                    src={newImage.preview}
+                                    alt="Preview"
+                                    style={{ maxHeight: 150 }}
+                                />
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-secondary position-absolute"
+                                    style={{ top: 4, right: 4 }}
+                                    onClick={removeNewImage}
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -396,6 +705,77 @@ export default function ListingForm() {
                     </button>
                 </div>
             </form>
+
+            {/* Pin Creation Modal */}
+            <Modal show={showPinModal} onHide={handleClosePinModal} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Add Floor Plan Pin</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <div className="mb-3">
+                        <strong>Position:</strong>{" "}
+                        X: {(pendingPinCoords.x * 100).toFixed(1)}%,{" "}
+                        Y: {(pendingPinCoords.y * 100).toFixed(1)}%
+                    </div>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label>Pin Image</Form.Label>
+                        <Form.Control
+                            ref={pinFileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePinImageChange}
+                        />
+                        <Form.Text className="text-muted">
+                            Upload an image to associate with this pin location.
+                        </Form.Text>
+                    </Form.Group>
+
+                    {pinImage?.preview && (
+                        <div className="mb-3">
+                            <img
+                                src={pinImage.preview}
+                                alt="Pin preview"
+                                style={{ maxWidth: "100%", maxHeight: 200 }}
+                            />
+                        </div>
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleClosePinModal} disabled={savingPin}>
+                        Cancel
+                    </Button>
+                    <Button variant="primary" onClick={handleSavePin} disabled={savingPin || !pinImage}>
+                        {savingPin ? "Saving..." : "Add Pin"}
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* View Pin Image Modal */}
+            <Modal show={!!selectedPin} onHide={() => setSelectedPin(null)} centered size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Pin Image</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center">
+                    {selectedPin?.image?.url ? (
+                        <img
+                            src={selectedPin.image.url}
+                            alt="Pin"
+                            style={{ maxWidth: "100%", maxHeight: "70vh" }}
+                        />
+                    ) : (
+                        <p className="text-muted">No image available for this pin.</p>
+                    )}
+                    <div className="mt-3 text-muted">
+                        Position: X: {((selectedPin?.x ?? 0) * 100).toFixed(1)}%, Y: {((selectedPin?.y ?? 0) * 100).toFixed(1)}%
+                    </div>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setSelectedPin(null)}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 }

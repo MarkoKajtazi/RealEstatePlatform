@@ -1,16 +1,24 @@
 using System.ComponentModel.DataAnnotations;
 namespace RealEstate.Domain.Domain_Models;
 
-public enum PropertyType : byte { Building = 0, House = 1 }
+public enum PropertyType : byte
+{
+    Building = 0, 
+    House = 1
+    // Commercial building
+    // Residential building
+}
 
 public class Property : BaseEntity
 {
     [Required] public string Name { get; set; }
     [Required] public int SquareMeters { get; set; }
     [Required] public int FloorCount { get; set; }
+    [Required] public int Year { get; set; }
     public int ParkingSpaceCount { get; set; }
     public PropertyType PropertyType { get; set; } = PropertyType.Building;
     public bool HasElevator {get; set; }
+    public string? Description { get; set; }
 
     [Required] public string Street { get; set; } = null!;
     [Required] public string City { get; set; } = null!;

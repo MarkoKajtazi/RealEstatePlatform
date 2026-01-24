@@ -21,3 +21,9 @@ export const insertFloorPlan = (id, payload) =>
 
 export const deleteListingFloorPlan = (id, floorPlanId) =>
     api.delete(`/listings/${id}/images/${floorPlanId}`).then(res => res.data);
+
+export const fetchFloorPlanPins = (id) =>
+    api.get(`/listings/${id}/pins`).then(res => res.data);
+
+export const createFloorPlanPin = (id, formData) =>
+    api.post(`/listings/${id}/pins`, formData).then(res => res.data);

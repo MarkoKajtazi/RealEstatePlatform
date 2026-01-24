@@ -1,15 +1,20 @@
-import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import HomePage from "./pages/HomePage.jsx";
 import AdminPage from "./pages/AdminPage.jsx";
 import PropertyForm from "./features/property/PropertyForm.jsx";
 import PropertyDetails from "./features/property/PropertyDetails.jsx";
 import ListingForm from "./features/listing/ListingForm.jsx";
+import PropertiesPage from "@/pages/PropertiesPage.jsx";
+import PropertyDetailPage from "@/pages/PropertyDetailPage.jsx";
 
 export default function AppRoutes() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<HomePage />} />
+                <Route path="/" element={<Navigate to="/home" replace />} />
+                <Route path="/home" element={<HomePage />} />
+                <Route path="/properties" element={<PropertiesPage />} />
+                <Route path="/properties/:id" element={<PropertyDetailPage />} />
 
                 <Route path="/admin" element={<AdminPage />}>
                     <Route path="properties/:id" element={<PropertyDetails />} />

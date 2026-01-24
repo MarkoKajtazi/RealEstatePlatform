@@ -370,6 +370,9 @@ namespace RealEstate.Repository.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
                     b.Property<int>("FloorCount")
                         .HasColumnType("integer");
 
@@ -407,6 +410,9 @@ namespace RealEstate.Repository.Migrations
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -473,7 +479,7 @@ namespace RealEstate.Repository.Migrations
                         .IsRequired();
 
                     b.HasOne("RealEstate.Domain.Domain_Models.Listing", "Listing")
-                        .WithMany()
+                        .WithMany("FloorPlanPins")
                         .HasForeignKey("ListingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -511,6 +517,8 @@ namespace RealEstate.Repository.Migrations
 
             modelBuilder.Entity("RealEstate.Domain.Domain_Models.Listing", b =>
                 {
+                    b.Navigation("FloorPlanPins");
+
                     b.Navigation("Images");
                 });
 

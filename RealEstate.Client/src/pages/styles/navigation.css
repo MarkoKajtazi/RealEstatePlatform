@@ -1,0 +1,40 @@
+#navbar {
+    position: fixed;
+}
+
+#brand-logo {
+    width: 48px;
+    height: 48px;
+}
+
+#navbar-wrapper {
+    position: relative;
+}
+
+.navbar-line {
+    position: absolute;
+    bottom: 0;
+    left: 2%;
+    right: 2%;
+    height: 1px;
+    background-color: #cccbcb;
+}
+
+
+.nav-link-custom {
+    position: relative;
+    padding: 1rem 0;
+    text-decoration: none;
+    color: black;
+}
+
+.nav-link-custom.active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background-color: #f5c518;
+    z-index: 2;
+}

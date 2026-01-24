@@ -57,7 +57,10 @@ export default function PropertyDetails() {
             <div className="d-flex justify-content-between align-items-center px-3">
                 <h1>{property.name}</h1>
                 <div className="m-0 p-0 d-flex align-items-center">
-                    <Link to={`/admin/properties/${id}/edit`} className="btn btn-outline-light me-3">
+                    <Link to={`/properties/${id}`} className="btn btn-sm btn-outline-light ">
+                        See on front page
+                    </Link>
+                    <Link to={`/admin/properties/${id}/edit`} className="btn btn-outline-light mx-3">
                         Edit
                     </Link>
                     <button onClick={handleDelete} className="btn btn-outline-danger">
@@ -70,23 +73,27 @@ export default function PropertyDetails() {
 
             <div className="mt-0 px-3 flex-grow-1 overflow-auto" style={{minHeight: 0}}>
                 <div className="row gap-3">
-                    <div className="rounded-3 px-3 pt-1 m-0 text-center col-lg-2" style={{background: "#021526"}}>
+                    <div className="rounded-3 px-3 pt-1 m-0 text-center col" style={{background: "#021526"}}>
+                        <h5 className="card-title text-light fw-lighter">Year:</h5>
+                        <h4 className="card-body text-white m-2">{property?.year}</h4>
+                    </div>
+                    <div className="rounded-3 px-3 pt-1 m-0 text-center col" style={{background: "#021526"}}>
                         <h5 className="card-title text-light fw-lighter">Square Meters:</h5>
                         <h4 className="card-body text-white m-2">{property.squareMeters}<span className="fs-6">m²</span></h4>
                     </div>
-                    <div className="rounded-3 px-3 pt-1 m-0 text-center col-lg-2" style={{background: "#021526"}}>
+                    <div className="rounded-3 px-3 pt-1 m-0 text-center col" style={{background: "#021526"}}>
                         <h5 className="card-title text-light fw-lighter">Floor Count:</h5>
                         <h4 className="card-body text-white m-2">{property.floorCount}</h4>
                     </div>
-                    <div className="rounded-3 px-3 pt-1 m-0 text-center col-lg-2" style={{background: "#021526"}}>
+                    <div className="rounded-3 px-3 pt-1 m-0 text-center col" style={{background: "#021526"}}>
                         <h5 className="card-title text-light fw-lighter">Parking Spaces:</h5>
                         <h4 className="card-body text-white m-2">{property.parkingSpaceCount}</h4>
                     </div>
-                    <div className="rounded-3 px-3 pt-1 m-0 text-center col-lg-2" style={{background: "#021526"}}>
+                    <div className="rounded-3 px-3 pt-1 m-0 text-center col" style={{background: "#021526"}}>
                         <h5 className="card-title text-light fw-lighter">Property Type:</h5>
                         <h4 className="card-body text-white m-2">{property?.propertyType === 0 ? "Building" : "House"}</h4>
                     </div>
-                    <div className="rounded-3 px-3 pt-1 m-0 text-center col-lg-2" style={{background: "#021526"}}>
+                    <div className="rounded-3 px-3 pt-1 m-0 text-center col" style={{background: "#021526"}}>
                         <h5 className="card-title text-light fw-lighter">Elevator:</h5>
                         <h4 className="card-body text-white m-2">{property?.hasElevator ? "Yes" : "No"}</h4>
                     </div>
@@ -94,6 +101,12 @@ export default function PropertyDetails() {
 
 
                 <hr/>
+                <div>
+                    <h3>Description</h3>
+                    <p>{property.description}</p>
+                </div>
+                <hr/>
+
                 <div className="p-0 my-3">
                     <div className="d-flex align-items-center justify-content-between">
                         <h3>Listings</h3>

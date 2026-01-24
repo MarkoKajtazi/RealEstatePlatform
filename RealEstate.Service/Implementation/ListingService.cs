@@ -73,6 +73,22 @@ public class ListingService : IListingService
         return Update(listing);
     }
 
+    public async Task<Listing> DeletePinById(Guid id, Guid pinId)
+    {
+        var listing = GetById(id);
+        if (listing == null) throw new Exception("Listing not found");
+
+        var pin = _floorPlanPinService.GetById(pinId);
+        if (pin == null) throw new Exception("Pin not found");
+
+        listing.FloorPlanPins.Remove(pin);
+
+        await _floorPlanPinService.DeleteById(pin.Id);
+        _listingRepository.Update(listing);
+
+        return listing;
+    }
+
     public async Task<Listing> DeleteImageById(Guid id, Guid imageId)
     {
         var listing = GetById(id);
@@ -82,6 +98,15 @@ public class ListingService : IListingService
         if (image == null) throw new Exception("Image not found");
 
         listing.Images.Remove(image);
+
+        if (image.Type == ImageType.FloorPlan)
+        {
+            foreach (var floorPlanPin in listing.FloorPlanPins)
+            {
+                await _floorPlanPinService.DeleteById(floorPlanPin.Id);
+                listing.FloorPlanPins.Remove(floorPlanPin);
+            }
+        }
 
         await _imageService.DeleteById(imageId);
         _listingRepository.Update(listing);
@@ -93,10 +118,16 @@ public class ListingService : IListingService
     {
         var listing = GetById(id);
         if (listing == null) throw new Exception("Listing not found");
-        
+
+        floorPlanPin.ListingId = id;
         var pin = await _floorPlanPinService.Insert(floorPlanPin, dto);
         listing.FloorPlanPins.Add(pin);
-        
+
         return Update(listing);
+    }
+
+    public List<FloorPlanPin> GetFloorPlanPinsByListingId(Guid listingId)
+    {
+        return _floorPlanPinService.GetByListingId(listingId);
     }
 }

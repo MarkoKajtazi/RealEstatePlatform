@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.Json.Serialization;
 using CloudinaryDotNet;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
@@ -8,6 +10,10 @@ using RealEstate.Repository.Implementation;
 using RealEstate.Repository.Interface;
 using RealEstate.Service.Implementation;
 using RealEstate.Service.Interface;
+
+// Set invariant culture for consistent decimal parsing (use "." not ",")
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +33,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAdB2C"));
 builder.Services.AddAuthorization();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
 builder.Services.AddTransient<ICloudinaryService, CloudinaryService>();
@@ -59,8 +69,6 @@ builder.Services.AddCors(options =>
                 .AllowAnyMethod();
         });
 });
-
-builder.Services.AddControllers();
 
 var app = builder.Build();
 app.UseCors("AllowReactApp");

@@ -8,6 +8,14 @@ import {
     deleteImage,
 } from "../../services/propertyService.js";
 
+const IMAGE_TYPES = [
+    { value: 0, label: "Exterior" },
+    { value: 1, label: "Panorama 360" },
+    { value: 2, label: "Floor Plan" },
+    { value: 3, label: "Hero" },
+    { value: 4, label: "Interior" },
+];
+
 export default function PropertyForm() {
     const { id } = useParams();
     const isEdit = Boolean(id);
@@ -18,6 +26,8 @@ export default function PropertyForm() {
 
     const initialForm = {
         name: "",
+        description: "",
+        year: new Date().getFullYear(),
         squareMeters: 0,
         floorCount: 0,
         parkingSpaceCount: 0,
@@ -29,8 +39,9 @@ export default function PropertyForm() {
     };
 
     const [form, setForm] = useState(initialForm);
-    const [existingFloorPlan, setExistingFloorPlan] = useState(null); // only one
-    const [newFloorPlan, setNewFloorPlan] = useState(null);
+    const [existingImages, setExistingImages] = useState([]);
+    const [newImages, setNewImages] = useState([]);
+    const [selectedImageType, setSelectedImageType] = useState(0);
     const fileInputRef = useRef();
 
     // Load property if editing
@@ -45,6 +56,8 @@ export default function PropertyForm() {
 
                 setForm({
                     name: data.name ?? "",
+                    description: data.description ?? "",
+                    year: data.year ?? new Date().getFullYear(),
                     squareMeters: data.squareMeters ?? 0,
                     floorCount: data.floorCount ?? 0,
                     parkingSpaceCount: data.parkingSpaceCount ?? 0,
@@ -55,9 +68,7 @@ export default function PropertyForm() {
                     street: data.street ?? "",
                 });
 
-                // Assuming the backend marks floor plan as type 0
-                const floorPlan = (data.images ?? []).find((img) => img.type === 0);
-                setExistingFloorPlan(floorPlan || null);
+                setExistingImages(data.images ?? []);
             } catch (err) {
                 console.error("Failed to load property", err);
             } finally {
@@ -72,9 +83,11 @@ export default function PropertyForm() {
     // Clean up preview URLs
     useEffect(() => {
         return () => {
-            if (newFloorPlan?.preview) URL.revokeObjectURL(newFloorPlan.preview);
+            newImages.forEach((img) => {
+                if (img.preview) URL.revokeObjectURL(img.preview);
+            });
         };
-    }, [newFloorPlan]);
+    }, [newImages]);
 
     // Handle input change
     function handleChange(e) {
@@ -99,29 +112,38 @@ export default function PropertyForm() {
             id: `${Date.now()}`,
             file,
             preview: URL.createObjectURL(file),
+            type: selectedImageType,
         };
 
-        setNewFloorPlan(upload);
+        setNewImages((prev) => [...prev, upload]);
         if (fileInputRef.current) fileInputRef.current.value = null;
     }
 
-    // Remove new floor plan before submission
-    function removeNewFile() {
-        if (newFloorPlan?.preview) URL.revokeObjectURL(newFloorPlan.preview);
-        setNewFloorPlan(null);
+    // Remove new image before submission
+    function removeNewImage(imageId) {
+        setNewImages((prev) => {
+            const img = prev.find((i) => i.id === imageId);
+            if (img?.preview) URL.revokeObjectURL(img.preview);
+            return prev.filter((i) => i.id !== imageId);
+        });
     }
 
-    // Remove existing floor plan (from backend)
+    // Remove existing image (from backend)
     async function handleRemoveExistingImage(imageId) {
-        const prev = existingFloorPlan;
-        setExistingFloorPlan(null);
+        const prev = existingImages;
+        setExistingImages((images) => images.filter((img) => img.id !== imageId));
         try {
             await deleteImage(id, imageId);
         } catch (err) {
             console.error("Failed to delete image", err);
-            setExistingFloorPlan(prev);
+            setExistingImages(prev);
             alert("Failed to delete image. Try again.");
         }
+    }
+
+    // Helper to get image type label
+    function getImageTypeLabel(typeValue) {
+        return IMAGE_TYPES.find((t) => t.value === typeValue)?.label ?? "Unknown";
     }
 
     // Submit handler
@@ -132,6 +154,8 @@ export default function PropertyForm() {
         try {
             const payload = {
                 name: form.name,
+                description: form.description,
+                year: Number(form.year) || new Date().getFullYear(),
                 squareMeters: Number(form.squareMeters) || 0,
                 floorCount: Number(form.floorCount) || 0,
                 parkingSpaceCount: Number(form.parkingSpaceCount) || 0,
@@ -152,11 +176,11 @@ export default function PropertyForm() {
                 propertyId = created?.id?.toString();
             }
 
-            // Upload floor plan image if added
-            if (newFloorPlan && propertyId) {
+            // Upload all new images
+            for (const img of newImages) {
                 const formData = new FormData();
-                formData.append("File", newFloorPlan.file);
-                formData.append("Type", "0"); // floor plan type
+                formData.append("File", img.file);
+                formData.append("Type", img.type.toString());
                 formData.append("PropertyId", propertyId);
 
                 await insertPropertyImage(propertyId, formData);
@@ -189,6 +213,17 @@ export default function PropertyForm() {
                         onChange={handleChange}
                         className="form-control"
                         required
+                    />
+                </div>
+
+                <div className="mb-3">
+                    <label className="form-label">Description</label>
+                    <textarea
+                        name="description"
+                        value={form.description}
+                        onChange={handleChange}
+                        className="form-control"
+                        rows={3}
                     />
                 </div>
 
@@ -230,17 +265,33 @@ export default function PropertyForm() {
                     </div>
                 </div>
 
-                <div className="mb-3">
-                    <label className="form-label">Property Type</label>
-                    <select
-                        name="propertyType"
-                        value={form.propertyType}
-                        onChange={handleChange}
-                        className="form-select"
-                    >
-                        <option value={0}>Building</option>
-                        <option value={1}>House</option>
-                    </select>
+                <div className="row">
+                    <div className="col-md-6 mb-3">
+                        <label className="form-label">Property Type</label>
+                        <select
+                            name="propertyType"
+                            value={form.propertyType}
+                            onChange={handleChange}
+                            className="form-select"
+                        >
+                            <option value={0}>Building</option>
+                            <option value={1}>House</option>
+                        </select>
+                    </div>
+
+                    <div className="col-md-6 mb-3">
+                        <label className="form-label">Year Built</label>
+                        <input
+                            name="year"
+                            type="number"
+                            min={1800}
+                            max={new Date().getFullYear()}
+                            value={form.year}
+                            onChange={handleChange}
+                            className="form-control"
+                            required
+                        />
+                    </div>
                 </div>
 
                 <div className="form-check mb-3">
@@ -292,66 +343,93 @@ export default function PropertyForm() {
                     </div>
                 </div>
 
-                {/* Floor Plan Section */}
-                {(existingFloorPlan || newFloorPlan) && (
+                {/* Property Images Section */}
+                {(existingImages.length > 0 || newImages.length > 0) && (
                     <div className="mb-3">
-                        <label className="form-label">Floor Plan</label>
+                        <label className="form-label">Property Images</label>
                         <div
-                            className="d-flex gap-2 flex-row flex-nowrap overflow-auto p-2"
-                            style={{ background: "#f7f7f7" }}
+                            className="d-flex gap-2 flex-row flex-wrap p-2 rounded"
+                            style={{ background: "#2a2a2a" }}
                         >
-                            {existingFloorPlan && (
-                                <div style={{ minWidth: 150 }} className="position-relative">
+                            {existingImages.map((img) => (
+                                <div key={img.id} style={{ minWidth: 150 }} className="position-relative">
                                     <img
-                                        src={existingFloorPlan.url}
-                                        alt="Floor plan"
-                                        style={{ width: 150, display: "block" }}
+                                        src={img.url}
+                                        alt={getImageTypeLabel(img.type)}
+                                        style={{ width: 150, height: 100, objectFit: "cover", display: "block", borderRadius: 4 }}
                                     />
+                                    <span
+                                        className="badge bg-secondary position-absolute"
+                                        style={{ bottom: 6, left: 6, fontSize: "0.7rem" }}
+                                    >
+                                        {getImageTypeLabel(img.type)}
+                                    </span>
                                     <button
                                         type="button"
                                         className="btn btn-sm btn-danger position-absolute"
                                         style={{ top: 6, right: 6 }}
-                                        onClick={() => handleRemoveExistingImage(existingFloorPlan.id)}
+                                        onClick={() => handleRemoveExistingImage(img.id)}
                                     >
-                                        ✕
+                                        X
                                     </button>
                                 </div>
-                            )}
+                            ))}
 
-                            {newFloorPlan && (
-                                <div style={{ minWidth: 150, position: "relative" }}>
+                            {newImages.map((img) => (
+                                <div key={img.id} style={{ minWidth: 150, position: "relative" }}>
                                     <img
-                                        src={newFloorPlan.preview}
+                                        src={img.preview}
                                         alt="preview"
-                                        style={{ width: 150, display: "block" }}
+                                        style={{ width: 150, height: 100, objectFit: "cover", display: "block", borderRadius: 4 }}
                                     />
+                                    <span
+                                        className="badge bg-info position-absolute"
+                                        style={{ bottom: 6, left: 6, fontSize: "0.7rem" }}
+                                    >
+                                        {getImageTypeLabel(img.type)} (new)
+                                    </span>
                                     <button
                                         type="button"
                                         className="btn btn-sm btn-secondary position-absolute"
                                         style={{ top: 6, right: 6 }}
-                                        onClick={removeNewFile}
+                                        onClick={() => removeNewImage(img.id)}
                                     >
-                                        ✕
+                                        X
                                     </button>
                                 </div>
-                            )}
+                            ))}
                         </div>
                     </div>
                 )}
 
-                {/* Upload Input - only show if no existing or new floor plan */}
-                {!existingFloorPlan && !newFloorPlan && (
-                    <div className="mb-3">
-                        <label className="form-label">Add Floor Plan</label>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            className="form-control"
-                            accept="image/*"
-                            onChange={handleFile}
-                        />
+                {/* Add Property Image */}
+                <div className="mb-3">
+                    <label className="form-label">Add Image</label>
+                    <div className="row g-2">
+                        <div className="col-md-4">
+                            <select
+                                className="form-select"
+                                value={selectedImageType}
+                                onChange={(e) => setSelectedImageType(Number(e.target.value))}
+                            >
+                                {IMAGE_TYPES.map((type) => (
+                                    <option key={type.value} value={type.value}>
+                                        {type.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="col-md-8">
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                className="form-control"
+                                accept="image/*"
+                                onChange={handleFile}
+                            />
+                        </div>
                     </div>
-                )}
+                </div>
 
                 {/* Actions */}
                 <div className="d-flex gap-2">

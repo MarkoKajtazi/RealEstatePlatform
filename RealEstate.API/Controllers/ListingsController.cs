@@ -61,4 +61,24 @@ public class ListingsController : Controller
     {
         return Ok(await _listingService.DeleteImageById(Guid.Parse(id), Guid.Parse(imageId)));
     }
+    
+    [HttpGet("{id}/pins")]
+    public IActionResult GetFloorPlanPinsByListingId(string id)
+    {
+        return Ok(_listingService.GetFloorPlanPinsByListingId(Guid.Parse(id)));
+    }
+
+    [RequestSizeLimit(100_000_000)]
+    [HttpPost("{id}/pins")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> InsertFloorPlanPinById(string id, [FromForm] FloorPlanPin pin, [FromForm] UploadImageDTO dto)
+    {
+        return Ok(await _listingService.InsertFloorPlanPin(Guid.Parse(id), pin, dto));
+    }
+    
+    [HttpDelete("{id}/pins/{pinId}")]
+    public async Task<IActionResult> DeleteFloorPlanPinById(string id, string pinId)
+    {
+        return Ok(await _listingService.DeletePinById(Guid.Parse(id), Guid.Parse(pinId)));
+    }
 }

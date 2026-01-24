@@ -14,5 +14,7 @@ public interface IListingService
     Listing DeleteById(Guid id);
     Task<Listing> InsertImageById(Guid id, UploadImageDTO dto);
     Task<Listing> DeleteImageById(Guid id, Guid imageId);
+    Task<Listing> DeletePinById(Guid id, Guid pinId);
     Task<Listing> InsertFloorPlanPin(Guid id, FloorPlanPin floorPlanPin, UploadImageDTO dto);
+    List<FloorPlanPin> GetFloorPlanPinsByListingId(Guid listingId);
 }

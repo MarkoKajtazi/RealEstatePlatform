@@ -32,7 +32,9 @@ public class PropertyService : IPropertyService
     {
         return _propertyRepository.Get(
             selector: x => x, predicate: x => x.Id == id,
-            include: x => x.Include(q => q.Images).Include(q => q.Listings)
+            include: x => x.Include(q => q.Images)
+                          .Include(q => q.Listings!)
+                          .ThenInclude(l => l.Images)
         );
     }
 
