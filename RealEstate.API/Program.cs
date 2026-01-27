@@ -11,7 +11,6 @@ using RealEstate.Repository.Interface;
 using RealEstate.Service.Implementation;
 using RealEstate.Service.Interface;
 
-// Set invariant culture for consistent decimal parsing (use "." not ",")
 CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
 CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
@@ -59,9 +58,7 @@ Cloudinary cloudinary = new Cloudinary(account)
 builder.Services.AddSingleton(cloudinary);
 cloudinary.Api.Secure = true;
 
-// Configure CORS - allow multiple origins for development and Docker
-var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(',')
-    ?? new[] { "http://localhost:5173", "http://localhost", "http://localhost:80" };
+var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(',') ?? new[] { "http://localhost:5173" }; 
 
 builder.Services.AddCors(options =>
 {
@@ -77,7 +74,6 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 app.UseCors("AllowReactApp");
 
-// Only use HTTPS redirection in development (Docker uses HTTP internally)
 if (!app.Environment.IsProduction())
 {
     app.UseHttpsRedirection();
