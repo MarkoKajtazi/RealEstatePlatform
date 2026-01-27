@@ -2,6 +2,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/home.css";
 import {WordsPullUp} from "../components/WordsPullUp.jsx";
 import Navigation from "@/components/Navigation.jsx";
+import {NavLink} from "react-router-dom";
 
 export default function HomePage() {
     return (
@@ -15,7 +16,10 @@ export default function HomePage() {
                 </div>
 
                 <p id="hero-subtitle" className="fw-bolder">YOUR HOME<span className="fw-lighter">.</span></p>
+
+                <NavLink to="/properties" className="hook-button">CHECK OUT OUR PROJECTS</NavLink>
             </div>
+
         </div>
     );
 }

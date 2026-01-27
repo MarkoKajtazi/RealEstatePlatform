@@ -12,7 +12,8 @@ function optimizeCloudinaryUrl(url, width = 1200) {
 
 function PropertyCard({property}) {
     const rawUrl = property.images?.[0]?.url || "/placeholder-property.jpg";
-    const imageUrl = optimizeCloudinaryUrl(rawUrl);
+    // const imageUrl = optimizeCloudinaryUrl(rawUrl);
+    const imageUrl = rawUrl;
     const propertyType = property.propertyType === 0 ? "Building" : "House";
 
     return (

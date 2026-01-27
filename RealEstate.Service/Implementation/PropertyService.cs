@@ -35,6 +35,9 @@ public class PropertyService : IPropertyService
             include: x => x.Include(q => q.Images)
                           .Include(q => q.Listings!)
                           .ThenInclude(l => l.Images)
+                          .Include(q => q.Listings!)
+                          .ThenInclude(l => l.FloorPlanPins!)
+                          .ThenInclude(p => p.Image)
         );
     }
 

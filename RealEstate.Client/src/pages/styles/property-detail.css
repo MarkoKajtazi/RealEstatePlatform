@@ -29,16 +29,22 @@
     color: #333;
 }
 
-/* Hero Section */
+
+.property-main-row {
+    display: flex;
+    gap: 3rem;
+}
+
 .property-hero {
-    margin-bottom: 2rem;
+    flex: 2;
+    min-width: 0;
 }
 
 .property-hero-media {
     width: 100%;
     height: 60vh;
     max-height: 600px;
-    border-radius: 12px;
+    /*border-radius: 12px;*/
     overflow: hidden;
     background: #f0f0f0;
 }
@@ -86,11 +92,11 @@
 }
 
 .property-info-section {
-    margin-bottom: 3rem;
-}
-
-.property-header {
-    margin-bottom: 1.5rem;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 .property-type-badge {
@@ -103,42 +109,39 @@
     font-weight: 600;
 }
 
-.property-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #434343;
-    margin: 0 0 0.5rem 0;
+
+.property-header {
+    /*margin-top: 3rem;*/
 }
 
-.property-detail-container .property-location {
-    font-size: 1.1rem;
-    color: #666;
-    border-bottom: 2px solid #f5c518;
-    padding-bottom: 4px;
-    display: inline-block;
-
+.property-location {
+    font-size: 1rem;
+    /*color: #666;*/
 }
+
 
 .property-stats {
     display: flex;
+    justify-content: space-between;
     gap: 2rem;
     flex-wrap: wrap;
-    padding: 1.5rem;
-    background: #f8f9fa;
+    padding: 1.5rem 0;
+    /*background: #f8f9fa;*/
     border-radius: 12px;
+    margin-bottom: 2rem;
 }
 
 .stat-item {
     display: flex;
-    flex-direction: column;
     align-items: center;
     min-width: 80px;
 }
 
 .stat-value {
-    font-size: 1.75rem;
-    font-weight: 700;
+    font-size: 2rem;
+    font-weight: 500;
     color: #1a1a1a;
+    margin-right: 0.5rem;
 }
 
 .stat-label {
@@ -147,26 +150,24 @@
     margin-top: 0.25rem;
 }
 
-/* Property Description */
 .property-description {
-    margin: 1.5rem 0;
-    /*padding: 1.5rem;*/
+    padding-bottom: 1.5rem;
     border-radius: 12px;
 }
 
 .description-title {
-    font-size: 1.25rem;
     font-weight: 600;
-    color: #1a1a1a;
-    margin: 0 0 0.75rem 0;
+    color: #434343;
+    /*margin: 0 0 0.75rem 0;*/
 }
 
 .description-text {
     font-size: 1rem;
-    color: #555;
+    color: #1e1e1e;
     line-height: 1.7;
     margin: 0;
     white-space: pre-line;
+    text-align: justify;
 }
 
 /* Listings Section */
@@ -174,161 +175,370 @@
     margin-bottom: 3rem;
 }
 
-.section-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.listing-count {
-    font-size: 0.9rem;
-    font-weight: 400;
-    color: #666;
-    background: #f0f0f0;
-    padding: 4px 12px;
-    border-radius: 20px;
-}
-
 .no-listings {
     color: #666;
     font-style: italic;
 }
 
+/* Listing Card Grid */
 .listings-grid {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
 
+/* Card Container */
 .listing-card {
-    width: 100%;
+    --card-border: #e8e6e3;
+    --accent: #1a1a1a;
+    --accent-light: #c9a227;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --text-muted: #9a9a9a;
+
+    position: relative;
     display: flex;
     flex-direction: row;
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     overflow: hidden;
-    transition: box-shadow 0.2s, transform 0.2s;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.listing-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--accent-light), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .listing-card:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
     transform: translateY(-2px);
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.08),
+        0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
+.listing-card:hover::before {
+    opacity: 1;
+}
+
+/* Unavailable State */
+.listing-unavailable {
+    --card-bg: #f5f5f4;
+}
+
+.listing-unavailable .listing-card-floorplan img {
+    filter: grayscale(100%);
+    opacity: 0.6;
+}
+
+/* Floor Plan Section */
 .listing-card-floorplan {
-    width: 40%;
-    min-width: 200px;
+    position: relative;
+    width: 500px;
+    min-width: 400px;
+    max-height: 280px;
+    background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 100%);
     overflow: hidden;
-    background: #f8f9fa;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 1rem;
+}
+
+.floorplan-image-wrapper {
+    position: relative;
+    display: inline-block;
 }
 
 .listing-card-floorplan img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    display: block;
+    max-width: 100%;
+    max-height: 240px;
+    width: auto;
+    height: auto;
 }
 
-.listing-card-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+.listing-card:hover .listing-card-floorplan img {
+    transform: scale(1.03);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.listing-unavailable {
-    opacity: 0.7;
-}
-
-/*.listing-card-header {*/
-/*    display: flex;*/
-/*    justify-content: space-between;*/
-/*    align-items: center;*/
-/*    padding: 1rem 1.25rem;*/
-/*    background: #f5c518;*/
-/*    color: #fff;*/
-/*}*/
-
-.listing-floor {
-    font-weight: 600;
-    font-size: 1rem;
-}
-
-.listing-sold {
-    background: #dc3545;
-    color: #fff;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.listing-card-body {
-    padding: 1.25rem;
-}
-
-.listing-price {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #1a1a1a;
-}
-
-.listing-price-sqm {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 1rem;
-}
-
-.listing-specs {
-    display: flex;
-    gap: 1.5rem;
-    padding: 1rem 0;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 1rem;
-}
-
-.listing-spec {
+.floorplan-placeholder {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #555;
+    gap: 0.5rem;
 }
 
-.spec-value {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1a1a1a;
+.floorplan-placeholder i {
+    font-size: 2.5rem;
+    opacity: 0.4;
 }
 
-.spec-label {
-    font-size: 0.8rem;
-    color: #888;
+.floorplan-placeholder span {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.5;
 }
 
-.listing-features {
+/* Floor Plan Pins */
+.floorplan-pin {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    z-index: 10;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.floorplan-pin:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Pin Modal */
+.pin-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
     display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.pin-modal {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+.pin-modal img {
+    max-width: 100%;
+    max-height: 85vh;
+    object-fit: contain;
+    border-radius: 4px;
+}
+
+.pin-modal-close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.pin-modal-close:hover {
+    opacity: 1;
+}
+
+.pin-modal-empty {
+    color: #888;
+    padding: 3rem;
+    text-align: center;
+}
+
+/* Card Header */
+.listing-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.listing-floor-info {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.floor-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+}
+.price-currency {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+}
+
+.floor-number {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent);
+    font-feature-settings: 'tnum';
+}
+
+.listing-sold-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #b91c1c;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid #b91c1c;
+}
+
+/* Sold Overlay */
+.listing-sold-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+.listing-sold-overlay span {
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    color: #fff;
+    padding: 0.75rem 2rem;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Info Section */
+.listing-card-info {
+    flex: 1;
+    padding: 1.75rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0;
+    min-height: 180px;
+}
+
+/* Price Block */
+.listing-total-price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.price-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent);
+    font-feature-settings: 'tnum';
+}
+
+/* Specs Grid */
+.listing-specs-grid {
+    display: flex;
+    gap: 2.5rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--card-border);
+    border-bottom: 1px solid var(--card-border);
+}
+
+.spec-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.spec-item i {
+    font-size: 1.1rem;
+    color: var(--accent-light);
+}
+
+.spec-content {
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+}
+
+.spec-item .spec-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.spec-item .spec-unit {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: lowercase;
+}
+
+/* Amenities */
+.listing-amenities {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
     flex-wrap: wrap;
 }
 
-.listing-feature {
-    background: #f0f0f0;
-    color: #555;
-    padding: 4px 10px;
-    border-radius: 4px;
+.amenity-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    background: linear-gradient(135deg, #f0ebe3 0%, #e8e3db 100%);
+    border-radius: 2px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.amenity-tag i {
     font-size: 0.8rem;
+    color: var(--accent-light);
+}
+
+@media (max-width: 992px) {
+    .listing-specs-grid {
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .listing-card-floorplan {
+        width: 380px;
+        min-width: 320px;
+        max-height: 200px;
+    }
+
+    .listing-card-info {
+        padding: 1.5rem 2rem;
+    }
 }
 
 @media (max-width: 768px) {
     .property-detail-container {
         padding: 0.5rem;
+    }
+
+    .property-main-row {
+        flex-direction: column;
     }
 
     .property-hero-media {
@@ -354,6 +564,26 @@
     .listing-card-floorplan {
         width: 100%;
         min-width: unset;
-        aspect-ratio: 4/3;
+        max-height: 200px;
+    }
+
+    .listing-card-info {
+        padding: 1.25rem 1.5rem;
+        min-height: auto;
+        gap: 1rem;
+    }
+
+    .listing-specs-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+
+    .price-value {
+        font-size: 1.2rem;
+    }
+
+    .floor-number {
+        font-size: 1.5rem;
     }
 }
