@@ -2346,7 +2346,10 @@
         },
         "runtime": {
           "bin/placeholder/RealEstate.Domain.dll": {}
-        }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
       }
     }
   },

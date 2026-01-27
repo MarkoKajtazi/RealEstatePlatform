@@ -16,7 +16,3 @@
 /Users/markokajtazi/Desktop/Finki/Integrated Systems/Project/RealEstatePlatform/RealEstate.Repository/obj/Debug/net9.0/RealEstate.Repository.pdb
 /Users/markokajtazi/Desktop/Finki/Integrated Systems/Project/RealEstatePlatform/RealEstate.Repository/obj/Debug/net9.0/RealEstate.Repository.genruntimeconfig.cache
 /Users/markokajtazi/Desktop/Finki/Integrated Systems/Project/RealEstatePlatform/RealEstate.Repository/obj/Debug/net9.0/ref/RealEstate.Repository.dll
-/Users/markokajtazi/Desktop/Finki/Integrated Systems/Project/RealEstatePlatform/RealEstate.Repository/bin/Debug/net9.0/Microsoft.AspNetCore.Http.Features.dll
-/Users/markokajtazi/Desktop/Finki/Integrated Systems/Project/RealEstatePlatform/RealEstate.Repository/bin/Debug/net9.0/Microsoft.Net.Http.Headers.dll
-/Users/markokajtazi/Desktop/Finki/Integrated Systems/Project/RealEstatePlatform/RealEstate.Repository/bin/Debug/net9.0/Microsoft.AspNetCore.Connections.Abstractions.dll
-/Users/markokajtazi/Desktop/Finki/Integrated Systems/Project/RealEstatePlatform/RealEstate.Repository/bin/Debug/net9.0/Microsoft.Extensions.Features.dll

@@ -4512,7 +4512,10 @@
         },
         "runtime": {
           "bin/placeholder/RealEstate.Domain.dll": {}
-        }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
       },
       "RealEstate.Repository/1.0.0": {
         "type": "project",

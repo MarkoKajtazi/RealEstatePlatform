@@ -9,6 +9,7 @@ import {
     updateListing,
     fetchFloorPlanPins,
     createFloorPlanPin,
+    deleteFloorPlanPin,
 } from "../../services/listingService.js";
 import { fetchProperty } from "../../services/propertyService.js";
 
@@ -54,6 +55,7 @@ export default function ListingForm() {
     const [pinImage, setPinImage] = useState(null);
     const [savingPin, setSavingPin] = useState(false);
     const [selectedPin, setSelectedPin] = useState(null); // For viewing existing pin images
+    const [deletingPin, setDeletingPin] = useState(false);
     const floorPlanRef = useRef(null);
     const pinFileInputRef = useRef(null);
 
@@ -235,6 +237,30 @@ export default function ListingForm() {
             alert("Failed to create pin. Check console for details.");
         } finally {
             setSavingPin(false);
+        }
+    }
+
+    async function handleDeletePin() {
+        if (!selectedPin?.id) return;
+
+        if (!window.confirm("Are you sure you want to delete this pin?")) {
+            return;
+        }
+
+        setDeletingPin(true);
+        try {
+            await deleteFloorPlanPin(id, selectedPin.id);
+
+            // Reload pins
+            const pins = await fetchFloorPlanPins(id);
+            setFloorPlanPins(pins ?? []);
+
+            setSelectedPin(null);
+        } catch (err) {
+            console.error("Failed to delete floor plan pin", err);
+            alert("Failed to delete pin. Check console for details.");
+        } finally {
+            setDeletingPin(false);
         }
     }
 
@@ -771,7 +797,14 @@ export default function ListingForm() {
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setSelectedPin(null)}>
+                    <Button
+                        variant="danger"
+                        onClick={handleDeletePin}
+                        disabled={deletingPin}
+                    >
+                        {deletingPin ? "Deleting..." : "Delete Pin"}
+                    </Button>
+                    <Button variant="secondary" onClick={() => setSelectedPin(null)} disabled={deletingPin}>
                         Close
                     </Button>
                 </Modal.Footer>

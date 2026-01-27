@@ -76,6 +76,7 @@ body {
 }
 
 .hook-button:hover {
-    background: #000;
+    background: #f5c518;
+    border: 1px solid #f5c518;
     color: #fff;
 }

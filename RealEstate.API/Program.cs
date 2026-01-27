@@ -59,12 +59,16 @@ Cloudinary cloudinary = new Cloudinary(account)
 builder.Services.AddSingleton(cloudinary);
 cloudinary.Api.Secure = true;
 
+// Configure CORS - allow multiple origins for development and Docker
+var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS")?.Split(',')
+    ?? new[] { "http://localhost:5173", "http://localhost", "http://localhost:80" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
         builder =>
         {
-            builder.WithOrigins("http://localhost:5173")
+            builder.WithOrigins(allowedOrigins)
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
@@ -72,6 +76,12 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 app.UseCors("AllowReactApp");
-app.UseHttpsRedirection();
+
+// Only use HTTPS redirection in development (Docker uses HTTP internally)
+if (!app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
+
 app.MapControllers();
 app.Run();

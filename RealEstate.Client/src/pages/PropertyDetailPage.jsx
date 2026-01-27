@@ -2,6 +2,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/home.css";
 import "./styles/property-detail.css";
 import Navigation from "@/components/Navigation.jsx";
+import PanoramaViewer from "@/components/PanoramaViewer.jsx";
 import {useEffect, useState} from "react";
 import {useParams, Link} from "react-router-dom";
 import {fetchProperty} from "@/services/propertyService.js";
@@ -406,20 +407,12 @@ export default function PropertyDetailPage() {
             </div>
         </div>
 
-        {/* Pin Image Modal */}
-        {selectedPin && (
-            <div className="pin-modal-overlay" onClick={() => setSelectedPin(null)}>
-                <div className="pin-modal" onClick={(e) => e.stopPropagation()}>
-                    <button className="pin-modal-close" onClick={() => setSelectedPin(null)}>
-                        <i className="bi bi-x-lg"></i>
-                    </button>
-                    {selectedPin.image?.url ? (
-                        <img src={selectedPin.image.url} alt="Pin detail" />
-                    ) : (
-                        <p className="pin-modal-empty">No image available</p>
-                    )}
-                </div>
-            </div>
+        {/* 360 Panorama Viewer */}
+        {selectedPin && selectedPin.image?.url && (
+            <PanoramaViewer
+                imageUrl={selectedPin.image.url}
+                onClose={() => setSelectedPin(null)}
+            />
         )}
     </div>);
 }

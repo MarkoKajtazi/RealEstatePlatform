@@ -1,0 +1,51 @@
+# Build results
+**/bin/
+**/obj/
+**/out/
+
+# Node modules
+**/node_modules/
+
+# IDE
+.idea/
+.vs/
+.vscode/
+*.swp
+*.swo
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build logs
+*.log
+npm-debug.log*
+
+# Environment files (keep .env.example)
+.env
+.env.local
+.env.*.local
+
+# Git
+.git/
+.gitignore
+
+# Docker
+**/Dockerfile*
+docker-compose*.yml
+.docker/
+
+# Test results
+**/TestResults/
+**/coverage/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temp files
+*.tmp
+*.temp
