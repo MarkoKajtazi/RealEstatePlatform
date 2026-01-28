@@ -644,7 +644,7 @@ export default function ListingForm() {
                             ref={fileInputRef}
                             type="file"
                             className="form-control"
-                            accept="image/*"
+                            accept="image/*,video/*"
                             onChange={handleFile}
                         />
                     </div>
@@ -674,7 +674,7 @@ export default function ListingForm() {
                                 <Form.Control
                                     ref={newImageInputRef}
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/*,video/*"
                                     onChange={handleNewImageFile}
                                     disabled={uploadingImage}
                                 />
@@ -749,7 +749,7 @@ export default function ListingForm() {
                         <Form.Control
                             ref={pinFileInputRef}
                             type="file"
-                            accept="image/*"
+                            accept="image/*,video/*"
                             onChange={handlePinImageChange}
                         />
                         <Form.Text className="text-muted">

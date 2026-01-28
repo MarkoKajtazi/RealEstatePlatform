@@ -100,19 +100,26 @@ public class ImageService : IImageService
     public async Task<Image> Update(Image image, IFormFile? file)
     {
         if (file == null) return _imageRepository.Update(image);
-        
-        DeletionResult deletionResult = await _cloudinaryService.DeleteByPublicIdAsync(image.PublicId);
+
+        bool wasVideo = image.MimeType?.StartsWith("video/", StringComparison.OrdinalIgnoreCase) == true;
+        DeletionResult deletionResult = await _cloudinaryService.DeleteByPublicIdAsync(image.PublicId, isVideo: wasVideo);
         if (deletionResult.Error != null) throw new Exception(deletionResult.Error.Message);
-        
-        ImageUploadResult uploadResult = await _cloudinaryService.UploadImageAsync(file, Folder);
+
+        bool isImage = file.ContentType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) == true;
+
+        dynamic uploadResult = isImage
+            ? (dynamic)await _cloudinaryService.UploadImageAsync(file, Folder)
+            : (dynamic)await _cloudinaryService.UploadVideoAsync(file, Folder);
+
         if (uploadResult.Error != null) throw new Exception(uploadResult.Error.Message);
-        
+
         image.Url = uploadResult.SecureUrl?.ToString() ?? uploadResult.Url?.ToString() ?? string.Empty;
         image.PublicId = uploadResult.PublicId;
         image.FileName = uploadResult.OriginalFilename;
-        image.Width = uploadResult.Width;
-        image.Height = uploadResult.Height;
-        
+        image.MimeType = file.ContentType;
+        image.Width = uploadResult.Width ?? 0;
+        image.Height = uploadResult.Height ?? 0;
+
         return _imageRepository.Update(image);
     }
 
@@ -120,7 +127,8 @@ public class ImageService : IImageService
     {
         var image = GetById(id);
         if (image == null) throw new Exception("Image not found");
-        await _cloudinaryService.DeleteByPublicIdAsync(image.PublicId);
+        bool isVideo = image.MimeType?.StartsWith("video/", StringComparison.OrdinalIgnoreCase) == true;
+        await _cloudinaryService.DeleteByPublicIdAsync(image.PublicId, isVideo: isVideo);
         return _imageRepository.Delete(image);
     }
 }

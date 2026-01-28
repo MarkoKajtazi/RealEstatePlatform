@@ -68,15 +68,15 @@ public class CloudinaryService : ICloudinaryService
         }
     }
 
-    public async Task<DeletionResult> DeleteByPublicIdAsync(string publicId, bool invalidate = false)
+    public async Task<DeletionResult> DeleteByPublicIdAsync(string publicId, bool invalidate = false, bool isVideo = false)
     {
         if (string.IsNullOrWhiteSpace(publicId))
             throw new ArgumentException("publicId is required", nameof(publicId));
 
         var deletionParams = new DeletionParams(publicId)
         {
-            Invalidate = invalidate,            
-            ResourceType = ResourceType.Image
+            Invalidate = invalidate,
+            ResourceType = isVideo ? ResourceType.Video : ResourceType.Image
         };
 
         var result = await _cloudinary.DestroyAsync(deletionParams);

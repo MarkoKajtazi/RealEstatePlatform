@@ -424,7 +424,7 @@ export default function PropertyForm() {
                                 ref={fileInputRef}
                                 type="file"
                                 className="form-control"
-                                accept="image/*"
+                                accept="image/*,video/*"
                                 onChange={handleFile}
                             />
                         </div>
