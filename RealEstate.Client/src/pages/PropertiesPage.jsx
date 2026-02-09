@@ -5,10 +5,10 @@ import {useEffect, useState} from "react";
 import {Link} from "react-router-dom";
 import {fetchProperties} from "@/services/propertyService.js";
 
-function optimizeCloudinaryUrl(url, width = 1200) {
-    if (!url || !url.includes("cloudinary.com")) return url;
-    return url.replace("/upload/", `/upload/w_${width},q_auto,f_auto/`);
-}
+// function optimizeCloudinaryUrl(url, width = 1200) {
+//     if (!url || !url.includes("cloudinary.com")) return url;
+//     return url.replace("/upload/", `/upload/w_${width},q_auto,f_auto/`);
+// }
 
 function PropertyCard({property}) {
     const rawUrl = property.images?.[0]?.url || "/placeholder-property.jpg";
