@@ -1,5 +1,6 @@
 "use client"
-import { useInView } from 'framer-motion';
+// eslint-disable-next-line no-unused-vars
+import { motion, useInView } from 'framer-motion';
 import * as React from 'react';
 
 export function WordsPullUp({ text, className = '', fontSize = '2rem', highlightColor = '#F4B342' }) {
