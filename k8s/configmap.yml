@@ -8,7 +8,7 @@ metadata:
 data:
   DB_HOST: "postgres-service"
   DB_PORT: "5432"
-  DB_NAME: "realestate_db"
+  DB_NAME: "real_estate"
   ASPNETCORE_ENVIRONMENT: "Production"
   ASPNETCORE_URLS: "http://+:8080"
 ---
@@ -21,4 +21,4 @@ metadata:
     app: realestate-client
 data:
   NGINX_WORKER_PROCESSES: "auto"
-  API_BACKEND_URL: "http://api-service:8080"
+  API_BACKEND_URL: "http://api:8080"

@@ -18,7 +18,7 @@ spec:
       containers:
         - name: client
           image: markokajtazi/realestate-client:latest
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
               protocol: TCP
