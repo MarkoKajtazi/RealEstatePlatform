@@ -8,11 +8,16 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
+# Build argument for API URL
+ARG VITE_API_URL=/api
+
 # Copy source code
 COPY . .
 
-# Build argument for API URL
-ARG VITE_API_URL=http://localhost:8080/api
+# Remove any .env files to ensure build arg takes precedence
+RUN rm -f .env .env.local .env.*.local
+
+# Set environment variable for Vite build
 ENV VITE_API_URL=$VITE_API_URL
 
 # Build the app
