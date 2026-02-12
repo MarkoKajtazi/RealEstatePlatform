@@ -41,9 +41,9 @@ spec:
               command:
                 - pg_isready
                 - -U
-                - realestate_user
+                - real_estate_user
                 - -d
-                - realestate_db
+                - real_estate
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
@@ -53,9 +53,9 @@ spec:
               command:
                 - pg_isready
                 - -U
-                - realestate_user
+                - real_estate_user
                 - -d
-                - realestate_db
+                - real_estate
             initialDelaySeconds: 10
             periodSeconds: 5
             timeoutSeconds: 3
